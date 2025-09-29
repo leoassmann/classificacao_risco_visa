@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Validador de Risco - VISA/SC</title>
+    <title>Validador de Risco - VISA</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -89,7 +89,7 @@
 <body class="bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200 flex items-center justify-center min-h-screen p-4 antialiased">
 
     <!-- Container principal -->
-    <div class="relative bg-white dark:bg-gray-800 rounded-2xl shadow-lg dark:shadow-2xl p-6 sm:p-8 w-full max-w-4xl space-y-6">
+    <div class="relative bg-white dark:bg-gray-800 rounded-2xl shadow-lg dark:shadow-2xl p-6 sm:p-8 w-full max-w-2xl space-y-6">
         
         <!-- Botão de Alternar Tema -->
         <button id="theme-toggle" type="button" class="absolute top-4 right-4 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 rounded-lg text-sm p-2.5">
@@ -104,26 +104,7 @@
         </div>
 
         <!-- Área de Upload -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Upload Base de Dados (Excel) -->
-            <div id="excel-drop-area" class="file-drop-area flex flex-col justify-center items-center rounded-lg p-6 min-h-[200px]">
-                <!-- Estado inicial -->
-                <div id="excel-initial-state" class="text-center">
-                    <svg class="w-12 h-12 mx-auto text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
-                    <p class="mt-2 text-gray-500 dark:text-gray-400">Arraste a <strong class="text-blue-500 dark:text-blue-400">Base de dados.xlsx</strong></p>
-                    <p class="text-xs text-gray-400 dark:text-gray-500 my-2">ou</p>
-                    <label for="excel-file-input" class="cursor-pointer bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-300">Selecione o arquivo</label>
-                </div>
-                <!-- Estado de arquivo carregado -->
-                <div id="excel-loaded-state" class="hidden text-center">
-                    <svg class="w-12 h-12 mx-auto text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    <p class="mt-2 text-gray-700 dark:text-gray-300 font-semibold">Base de Dados Carregada</p>
-                    <p id="excel-file-name" class="text-sm mt-1 text-blue-600 dark:text-blue-300 truncate font-mono" title=""></p>
-                    <button id="remove-excel-button" class="mt-4 bg-red-600 text-white px-3 py-1 text-xs rounded-lg hover:bg-red-700 transition duration-300">Remover</button>
-                </div>
-                <input type="file" id="excel-file-input" class="hidden" accept=".xlsx, .xls">
-            </div>
-
+        <div class="w-full max-w-md mx-auto">
             <!-- Upload do Documento (PDF) -->
             <div id="pdf-drop-area" class="file-drop-area flex flex-col justify-center items-center rounded-lg p-6 min-h-[200px]">
                  <!-- Estado inicial -->
@@ -184,19 +165,12 @@
         const COLUMN_WIDTHS = { "descricao": 85 };
         const REGEX_CNAE_FORMATO = /\b\d{2}\.\d{2}-\d-\d{2}\b/g;
 
-        let excelFile = null;
         let pdfFile = null;
         let baseDataFromStorage = null;
         let finalResults = [];
 
         // --- SELETORES DE ELEMENTOS DO DOM ---
         const dom = {
-            excelDropArea: document.getElementById('excel-drop-area'),
-            excelInitialState: document.getElementById('excel-initial-state'),
-            excelLoadedState: document.getElementById('excel-loaded-state'),
-            excelFileName: document.getElementById('excel-file-name'),
-            excelFileInput: document.getElementById('excel-file-input'),
-            removeExcelButton: document.getElementById('remove-excel-button'),
             pdfDropArea: document.getElementById('pdf-drop-area'),
             pdfInitialState: document.getElementById('pdf-initial-state'),
             pdfLoadedState: document.getElementById('pdf-loaded-state'),
@@ -250,16 +224,6 @@
 
         /** Atualiza a UI com base no estado atual dos arquivos. */
         function updateUI() {
-            // Estado do uploader de Excel
-            const isExcelLoaded = !!baseDataFromStorage;
-            dom.excelInitialState.classList.toggle('hidden', isExcelLoaded);
-            dom.excelLoadedState.classList.toggle('hidden', !isExcelLoaded);
-            if(isExcelLoaded) {
-                 const fileName = localStorage.getItem('cnae_base_filename') || 'base_carregada.xlsx';
-                 dom.excelFileName.textContent = fileName;
-                 dom.excelFileName.title = fileName;
-            }
-
             // Estado do uploader de PDF
             const isPdfLoaded = !!pdfFile;
             dom.pdfInitialState.classList.toggle('hidden', isPdfLoaded);
@@ -270,7 +234,7 @@
             }
 
             // Habilita ou desabilita o botão de processar
-            dom.processButton.disabled = !(isExcelLoaded && isPdfLoaded);
+            dom.processButton.disabled = !(baseDataFromStorage && pdfFile);
         }
 
         /** Renderiza a tabela de resultados. */
@@ -291,7 +255,6 @@
                 const tr = document.createElement('tr');
                 const classification = row.classificacao?.toLowerCase() || '';
                 let rowColorClass = '';
-                // As classes de cor de fundo foram ajustadas para o modo claro e escuro
                 if (classification.includes("alto risco")) rowColorClass = 'bg-red-100 dark:bg-red-900/40 hover:bg-red-200 dark:hover:bg-red-800/50';
                 else if (classification.includes("médio risco")) rowColorClass = 'bg-yellow-100 dark:bg-yellow-900/40 hover:bg-yellow-200 dark:hover:bg-yellow-800/50';
                 else if (classification.includes("concomitante")) rowColorClass = 'bg-orange-100 dark:bg-orange-900/40 hover:bg-orange-200 dark:hover:bg-orange-800/50';
@@ -339,80 +302,46 @@
             updateUI();
         }
 
-        async function handleExcelFile(file) {
-            if (!validateFile(file, ['xlsx', 'xls'])) return;
-            
-            excelFile = file;
-            clearStatus();
-            logStatus('Lendo e salvando base de dados...', 'loading');
-            try {
-                const data = await readExcelFile(excelFile);
-                saveBaseToStorage(data, excelFile.name);
-                showToast('Base de dados salva com sucesso!', 'success');
-            } catch (error) {
-                showToast(`Erro ao ler o arquivo Excel: ${error.message}`, 'error');
-                removeBaseFromStorage();
-            } finally {
-                clearStatus();
-                updateUI();
-            }
-        }
-        
-        // --- LÓGICA DE ARMAZENAMENTO LOCAL ---
-
-        function saveBaseToStorage(jsonData, fileName) {
-            try {
-                localStorage.setItem('cnae_base_dados', JSON.stringify(jsonData));
-                localStorage.setItem('cnae_base_filename', fileName);
-                baseDataFromStorage = jsonData;
-            } catch (e) {
-                console.error("Erro ao salvar no localStorage: ", e);
-                showToast("Não foi possível salvar a base. O armazenamento pode estar cheio.", "error");
-            }
-        }
-
-        function loadBaseFromStorage() {
-            const jsonDataString = localStorage.getItem('cnae_base_dados');
-            if (jsonDataString) {
-                baseDataFromStorage = JSON.parse(jsonDataString);
-            }
-            updateUI();
-        }
-
-        function removeBaseFromStorage() {
-            localStorage.removeItem('cnae_base_dados');
-            localStorage.removeItem('cnae_base_filename');
-            baseDataFromStorage = null;
-            excelFile = null;
-            showToast('Base de dados removida.', 'info');
-            updateUI();
-        }
-
         function removePdfFile() {
             pdfFile = null;
             showToast('Arquivo PDF removido.', 'info');
             updateUI();
         }
+        
+        // --- LÓGICA DE CARREGAMENTO DA BASE ---
+
+        /** Carrega o arquivo Excel fixo do repositório. */
+        async function loadFixedExcelFile() {
+            logStatus('Carregando base de dados...', 'loading');
+            try {
+                // O arquivo 'base de dados.xlsx' deve estar no mesmo diretório que o index.html no repositório.
+                const response = await fetch('base de dados.xlsx');
+                if (!response.ok) {
+                    throw new Error(`Não foi possível carregar o arquivo: ${response.statusText}`);
+                }
+                const arrayBuffer = await response.arrayBuffer();
+                const data = new Uint8Array(arrayBuffer);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+                
+                baseDataFromStorage = jsonData;
+                clearStatus();
+                logStatus('Base de dados carregada com sucesso!', 'success');
+                setTimeout(clearStatus, 3000); // Limpa a mensagem de sucesso após 3 segundos
+                updateUI();
+
+            } catch (error) {
+                console.error('Erro ao carregar base de dados:', error);
+                clearStatus();
+                logStatus('Erro fatal ao carregar a base de dados.', 'error');
+                showToast(`Erro ao carregar a base: ${error.message}`, 'error');
+                baseDataFromStorage = null;
+            }
+        }
 
         // --- LÓGICA PRINCIPAL DE PROCESSAMENTO ---
         
         function cleanCnae(cnae) { return String(cnae).replace(/\D/g, ''); }
-
-        function readExcelFile(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    try {
-                        const data = new Uint8Array(e.target.result);
-                        const workbook = XLSX.read(data, { type: 'array' });
-                        const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
-                        resolve(json);
-                    } catch (err) { reject(err); }
-                };
-                reader.onerror = (err) => reject(err);
-                reader.readAsArrayBuffer(file);
-            });
-        }
         
         async function readPdfFile(file) {
             const data = new Uint8Array(await file.arrayBuffer());
@@ -437,8 +366,8 @@
                 logStatus('Validando base de dados...', 'loading');
                 const requiredColumns = ['CNAE', 'descricao', 'classificacao'];
                 if (!baseDataFromStorage || baseDataFromStorage.length === 0 || !requiredColumns.every(col => col in baseDataFromStorage[0])) {
-                    removeBaseFromStorage();
-                    throw new Error(`Base de dados inválida. Carregue um novo arquivo.`);
+                    baseDataFromStorage = null;
+                    throw new Error(`Base de dados inválida ou não carregada. Tente recarregar a página.`);
                 }
                 logStatus('Base de dados validada.', 'success');
                 
@@ -537,14 +466,13 @@
 
         // --- INICIALIZAÇÃO ---
         document.addEventListener('DOMContentLoaded', () => {
-            setupDragAndDrop(dom.excelDropArea, dom.excelFileInput, handleExcelFile);
+            loadFixedExcelFile(); // Carrega a base de dados fixa ao iniciar
+            
             setupDragAndDrop(dom.pdfDropArea, dom.pdfFileInput, handlePdfFile);
-            dom.removeExcelButton.addEventListener('click', removeBaseFromStorage);
             dom.removePdfButton.addEventListener('click', removePdfFile);
             dom.processButton.addEventListener('click', handleProcessing);
             dom.downloadButton.addEventListener('click', downloadResults);
             
-            loadBaseFromStorage();
             initializeTheme();
         });
     </script>
