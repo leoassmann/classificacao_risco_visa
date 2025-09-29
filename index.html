@@ -237,7 +237,7 @@
             dom.processButton.disabled = !(baseDataFromStorage && pdfFile);
         }
 
-        /** Renderiza a tabela de resultados. */
+/** Renderiza a tabela de resultados. */
         function renderResultsTable(data) {
             dom.resultsHeader.innerHTML = '';
             dom.resultsBody.innerHTML = '';
@@ -246,7 +246,15 @@
             const headers = Object.keys(data[0]);
             headers.forEach(header => {
                 const th = document.createElement('th');
-                th.className = "p-3 text-sm font-semibold tracking-wide text-left text-gray-700 dark:text-gray-300";
+                // MODIFICAÇÃO: Texto do cabeçalho menor (text-xs)
+                let headerClasses = "p-3 text-xs font-semibold tracking-wide text-left text-gray-700 dark:text-gray-300";
+                
+                // MODIFICAÇÃO: Aumenta a largura específica da coluna CNAE
+                if (header.toLowerCase() === 'cnae') {
+                    headerClasses += " w-28"; // Adiciona largura à coluna
+                }
+
+                th.className = headerClasses;
                 th.textContent = header.charAt(0).toUpperCase() + header.slice(1);
                 dom.resultsHeader.appendChild(th);
             });
@@ -261,7 +269,15 @@
 
                 headers.forEach(header => {
                     const td = document.createElement('td');
-                    td.className = "p-3 text-sm text-gray-600 dark:text-gray-400";
+                    // MODIFICAÇÃO: Texto da célula menor (text-xs)
+                    let cellClasses = "p-3 text-xs text-gray-600 dark:text-gray-400";
+
+                    // MODIFICAÇÃO: Impede a quebra de linha na coluna CNAE
+                    if (header.toLowerCase() === 'cnae') {
+                        cellClasses += " whitespace-nowrap";
+                    }
+
+                    td.className = cellClasses;
                     td.textContent = row[header];
                     tr.appendChild(td);
                 });
