@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class=""> <!-- A classe 'dark' será adicionada aqui via JS -->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Validador de Risco - VISA/SC</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Habilita o modo escuro baseado em classe no Tailwind CSS
+        tailwind.config = {
+            darkMode: 'class',
+        }
+    </script>
+    
+    <!-- Bibliotecas JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    
+    <!-- Fonte Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Animação para o spinner de carregamento */
+        .loader {
+            border: 4px solid #9ca3af; /* cinza claro */
+            border-top: 4px solid #6366f1; /* indigo */
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        .dark .loader {
+            border: 4px solid #4a5568; /* cinza escuro */
+            border-top: 4px solid #6366f1; /* indigo */
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* Estilo base da área de upload */
+        .file-drop-area {
+            border: 2px dashed #d1d5db; /* cinza claro */
+            transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+        }
+        .dark .file-drop-area {
+            border-color: #4a5568; /* cinza escuro */
+        }
+        /* Estilo para quando um arquivo é arrastado sobre a área */
+        .file-drop-area.dragover {
+            background-color: #eef2ff; /* indigo claro */
+            border-color: #6366f1; /* indigo */
+        }
+        .dark .file-drop-area.dragover {
+            background-color: #2d3748; /* cinza mais escuro */
+        }
+        /* Animações para as notificações (toast) */
+        .toast {
+            animation: slide-in 0.5s forwards, fade-out 0.5s 4.5s forwards;
+        }
+        @keyframes slide-in {
+            from {
+                transform: translateY(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        @keyframes fade-out {
+            from {
+                opacity: 1;
+            }
+            to {
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200 flex items-center justify-center min-h-screen p-4 antialiased">
+
+    <!-- Container principal -->
+    <div class="relative bg-white dark:bg-gray-800 rounded-2xl shadow-lg dark:shadow-2xl p-6 sm:p-8 w-full max-w-4xl space-y-6">
+        
+        <!-- Botão de Alternar Tema -->
+        <button id="theme-toggle" type="button" class="absolute top-4 right-4 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 rounded-lg text-sm p-2.5">
+            <svg id="theme-toggle-dark-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
+            <svg id="theme-toggle-light-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm-.707 10.607a1 1 0 011.414 0l.707-.707a1 1 0 111.414 1.414l-.707-.707a1 1 0 01-1.414 0zM17 13a1 1 0 100 2h-1a1 1 0 100-2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707z"></path></svg>
+        </button>
+
+        <!-- Cabeçalho -->
+        <div class="text-center">
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Classificação de Risco VISA - Santa Catarina</h1>
+            <p class="text-gray-500 dark:text-gray-400 mt-2 text-sm">RESOLUÇÃO NORMATIVA Nº 003/DIVS/SUV/SES – 01/12/2021</p>
+        </div>
+
+        <!-- Área de Upload -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Upload Base de Dados (Excel) -->
+            <div id="excel-drop-area" class="file-drop-area flex flex-col justify-center items-center rounded-lg p-6 min-h-[200px]">
+                <!-- Estado inicial -->
+                <div id="excel-initial-state" class="text-center">
+                    <svg class="w-12 h-12 mx-auto text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                    <p class="mt-2 text-gray-500 dark:text-gray-400">Arraste a <strong class="text-blue-500 dark:text-blue-400">Base de dados.xlsx</strong></p>
+                    <p class="text-xs text-gray-400 dark:text-gray-500 my-2">ou</p>
+                    <label for="excel-file-input" class="cursor-pointer bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-300">Selecione o arquivo</label>
+                </div>
+                <!-- Estado de arquivo carregado -->
+                <div id="excel-loaded-state" class="hidden text-center">
+                    <svg class="w-12 h-12 mx-auto text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <p class="mt-2 text-gray-700 dark:text-gray-300 font-semibold">Base de Dados Carregada</p>
+                    <p id="excel-file-name" class="text-sm mt-1 text-blue-600 dark:text-blue-300 truncate font-mono" title=""></p>
+                    <button id="remove-excel-button" class="mt-4 bg-red-600 text-white px-3 py-1 text-xs rounded-lg hover:bg-red-700 transition duration-300">Remover</button>
+                </div>
+                <input type="file" id="excel-file-input" class="hidden" accept=".xlsx, .xls">
+            </div>
+
+            <!-- Upload do Documento (PDF) -->
+            <div id="pdf-drop-area" class="file-drop-area flex flex-col justify-center items-center rounded-lg p-6 min-h-[200px]">
+                 <!-- Estado inicial -->
+                 <div id="pdf-initial-state" class="text-center">
+                    <svg class="w-12 h-12 mx-auto text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                    <p class="mt-2 text-gray-500 dark:text-gray-400">Arraste o <strong class="text-red-500 dark:text-red-400">documento.pdf</strong></p>
+                    <p class="text-xs text-gray-400 dark:text-gray-500 my-2">ou</p>
+                    <label for="pdf-file-input" class="cursor-pointer bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition duration-300">Selecione o arquivo</label>
+                </div>
+                 <!-- Estado de arquivo carregado -->
+                 <div id="pdf-loaded-state" class="hidden text-center">
+                    <svg class="w-12 h-12 mx-auto text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <p class="mt-2 text-gray-700 dark:text-gray-300 font-semibold">PDF Carregado</p>
+                    <p id="pdf-file-name" class="text-sm mt-1 text-red-600 dark:text-red-300 truncate font-mono" title=""></p>
+                    <button id="remove-pdf-button" class="mt-4 bg-red-600 text-white px-3 py-1 text-xs rounded-lg hover:bg-red-700 transition duration-300">Remover</button>
+                </div>
+                <input type="file" id="pdf-file-input" class="hidden" accept=".pdf">
+            </div>
+        </div>
+
+        <!-- Botão de Processamento e Status -->
+        <div class="text-center pt-4">
+            <button id="process-button" class="bg-indigo-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-indigo-700 disabled:bg-gray-400 dark:disabled:bg-gray-600 disabled:cursor-not-allowed transition-all duration-300 w-full md:w-auto" disabled>
+                Processar Arquivos
+            </button>
+            <div id="status-container" class="mt-4 text-center space-y-2 text-sm"></div>
+        </div>
+        
+        <!-- Área de Resultados -->
+        <div id="results-area" class="hidden">
+            <div class="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4">
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Resultados Encontrados</h2>
+                <button id="download-button" class="bg-teal-500 text-white px-5 py-2 rounded-lg hover:bg-teal-600 transition duration-300 flex items-center gap-2 w-full sm:w-auto justify-center">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                    Baixar Resultado
+                </button>
+            </div>
+            <div class="bg-gray-50 dark:bg-gray-900 rounded-lg max-h-96 overflow-auto">
+                <table class="w-full text-left min-w-[600px]">
+                    <thead class="sticky top-0 bg-gray-100 dark:bg-gray-900 shadow-sm">
+                        <tr id="results-header" class="border-b border-gray-200 dark:border-gray-700"></tr>
+                    </thead>
+                    <tbody id="results-body"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Container para Notificações (Toasts) -->
+    <div id="toast-container" class="fixed bottom-4 right-4 space-y-3 z-50"></div>
+
+    <script>
+        // Configuração do worker para pdf.js
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js';
+
+        // --- CONSTANTES E VARIÁVEIS DE ESTADO ---
+        const CLASSIFICATION_COLORS = { "ALTO risco": "FF0000", "médio risco": "FFFF00", "concomitante": "FFA500" };
+        const COLUMN_WIDTHS = { "descricao": 85 };
+        const REGEX_CNAE_FORMATO = /\b\d{2}\.\d{2}-\d-\d{2}\b/g;
+
+        let excelFile = null;
+        let pdfFile = null;
+        let baseDataFromStorage = null;
+        let finalResults = [];
+
+        // --- SELETORES DE ELEMENTOS DO DOM ---
+        const dom = {
+            excelDropArea: document.getElementById('excel-drop-area'),
+            excelInitialState: document.getElementById('excel-initial-state'),
+            excelLoadedState: document.getElementById('excel-loaded-state'),
+            excelFileName: document.getElementById('excel-file-name'),
+            excelFileInput: document.getElementById('excel-file-input'),
+            removeExcelButton: document.getElementById('remove-excel-button'),
+            pdfDropArea: document.getElementById('pdf-drop-area'),
+            pdfInitialState: document.getElementById('pdf-initial-state'),
+            pdfLoadedState: document.getElementById('pdf-loaded-state'),
+            pdfFileName: document.getElementById('pdf-file-name'),
+            pdfFileInput: document.getElementById('pdf-file-input'),
+            removePdfButton: document.getElementById('remove-pdf-button'),
+            processButton: document.getElementById('process-button'),
+            statusContainer: document.getElementById('status-container'),
+            resultsArea: document.getElementById('results-area'),
+            resultsHeader: document.getElementById('results-header'),
+            resultsBody: document.getElementById('results-body'),
+            downloadButton: document.getElementById('download-button'),
+            toastContainer: document.getElementById('toast-container'),
+            themeToggleBtn: document.getElementById('theme-toggle'),
+            themeToggleDarkIcon: document.getElementById('theme-toggle-dark-icon'),
+            themeToggleLightIcon: document.getElementById('theme-toggle-light-icon'),
+        };
+        
+        // --- FUNÇÕES DE UI ---
+
+        /** Mostra uma notificação (toast) na tela. */
+        function showToast(message, type = 'info') {
+            const icons = {
+                success: `<svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`,
+                error: `<svg class="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`,
+                info: `<svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`,
+            };
+            const colors = { success: 'border-green-500', error: 'border-red-500', info: 'border-blue-500' };
+            const toast = document.createElement('div');
+            toast.className = `toast bg-white dark:bg-gray-800 border-l-4 ${colors[type]} rounded-lg shadow-lg p-4 flex items-center gap-4`;
+            toast.innerHTML = `${icons[type]}<span class="text-gray-700 dark:text-gray-300">${message}</span>`;
+            dom.toastContainer.appendChild(toast);
+            setTimeout(() => toast.remove(), 5000);
+        }
+
+        /** Exibe uma mensagem de status no painel principal. */
+        function logStatus(message, type = 'info') {
+            const colors = { info: 'text-gray-500 dark:text-gray-400', success: 'text-green-500 dark:text-green-400', error: 'text-red-500 dark:text-red-400', loading: 'text-blue-500 dark:text-blue-400' };
+            const div = document.createElement('div');
+            div.className = `flex items-center justify-center gap-3 ${colors[type]}`;
+            if (type === 'loading') {
+                div.innerHTML = `<div class="loader" style="width: 20px; height: 20px; border-width: 2px;"></div><span>${message}</span>`;
+            } else {
+                div.textContent = message;
+            }
+            dom.statusContainer.appendChild(div);
+        }
+        
+        /** Limpa todas as mensagens de status. */
+        function clearStatus() { dom.statusContainer.innerHTML = ''; }
+
+        /** Atualiza a UI com base no estado atual dos arquivos. */
+        function updateUI() {
+            // Estado do uploader de Excel
+            const isExcelLoaded = !!baseDataFromStorage;
+            dom.excelInitialState.classList.toggle('hidden', isExcelLoaded);
+            dom.excelLoadedState.classList.toggle('hidden', !isExcelLoaded);
+            if(isExcelLoaded) {
+                 const fileName = localStorage.getItem('cnae_base_filename') || 'base_carregada.xlsx';
+                 dom.excelFileName.textContent = fileName;
+                 dom.excelFileName.title = fileName;
+            }
+
+            // Estado do uploader de PDF
+            const isPdfLoaded = !!pdfFile;
+            dom.pdfInitialState.classList.toggle('hidden', isPdfLoaded);
+            dom.pdfLoadedState.classList.toggle('hidden', !isPdfLoaded);
+             if(isPdfLoaded) {
+                 dom.pdfFileName.textContent = pdfFile.name;
+                 dom.pdfFileName.title = pdfFile.name;
+            }
+
+            // Habilita ou desabilita o botão de processar
+            dom.processButton.disabled = !(isExcelLoaded && isPdfLoaded);
+        }
+
+        /** Renderiza a tabela de resultados. */
+        function renderResultsTable(data) {
+            dom.resultsHeader.innerHTML = '';
+            dom.resultsBody.innerHTML = '';
+            if (data.length === 0) return;
+
+            const headers = Object.keys(data[0]);
+            headers.forEach(header => {
+                const th = document.createElement('th');
+                th.className = "p-3 text-sm font-semibold tracking-wide text-left text-gray-700 dark:text-gray-300";
+                th.textContent = header.charAt(0).toUpperCase() + header.slice(1);
+                dom.resultsHeader.appendChild(th);
+            });
+
+            data.forEach(row => {
+                const tr = document.createElement('tr');
+                const classification = row.classificacao?.toLowerCase() || '';
+                let rowColorClass = '';
+                // As classes de cor de fundo foram ajustadas para o modo claro e escuro
+                if (classification.includes("alto risco")) rowColorClass = 'bg-red-100 dark:bg-red-900/40 hover:bg-red-200 dark:hover:bg-red-800/50';
+                else if (classification.includes("médio risco")) rowColorClass = 'bg-yellow-100 dark:bg-yellow-900/40 hover:bg-yellow-200 dark:hover:bg-yellow-800/50';
+                else if (classification.includes("concomitante")) rowColorClass = 'bg-orange-100 dark:bg-orange-900/40 hover:bg-orange-200 dark:hover:bg-orange-800/50';
+                tr.className = `border-b border-gray-200 dark:border-gray-700 transition-colors duration-200 ${rowColorClass}`;
+
+                headers.forEach(header => {
+                    const td = document.createElement('td');
+                    td.className = "p-3 text-sm text-gray-600 dark:text-gray-400";
+                    td.textContent = row[header];
+                    tr.appendChild(td);
+                });
+                dom.resultsBody.appendChild(tr);
+            });
+            dom.resultsArea.classList.remove('hidden');
+        }
+
+        // --- MANIPULAÇÃO DE ARQUIVOS ---
+        
+        /** Configura eventos de arrastar e soltar e clique para uma área de upload. */
+        function setupDragAndDrop(area, input, handler) {
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => area.addEventListener(eventName, e => { e.preventDefault(); e.stopPropagation(); }, false));
+            ['dragenter', 'dragover'].forEach(eventName => area.addEventListener(eventName, () => area.classList.add('dragover'), false));
+            ['dragleave', 'drop'].forEach(eventName => area.addEventListener(eventName, () => area.classList.remove('dragover'), false));
+            area.addEventListener('drop', (e) => handler(e.dataTransfer.files[0]), false);
+            input.addEventListener('change', (e) => {
+                if(e.target.files.length > 0) handler(e.target.files[0]);
+                e.target.value = '';
+            });
+        }
+
+        /** Valida a extensão de um arquivo. */
+        function validateFile(file, allowedExtensions) {
+            if (!file) return false;
+            const extension = file.name.split('.').pop().toLowerCase();
+            if (!allowedExtensions.includes(extension)) {
+                showToast(`Arquivo inválido. Use: ${allowedExtensions.join(', ')}`, 'error');
+                return false;
+            }
+            return true;
+        }
+
+        function handlePdfFile(file) {
+            if (!validateFile(file, ['pdf'])) return;
+            pdfFile = file;
+            updateUI();
+        }
+
+        async function handleExcelFile(file) {
+            if (!validateFile(file, ['xlsx', 'xls'])) return;
+            
+            excelFile = file;
+            clearStatus();
+            logStatus('Lendo e salvando base de dados...', 'loading');
+            try {
+                const data = await readExcelFile(excelFile);
+                saveBaseToStorage(data, excelFile.name);
+                showToast('Base de dados salva com sucesso!', 'success');
+            } catch (error) {
+                showToast(`Erro ao ler o arquivo Excel: ${error.message}`, 'error');
+                removeBaseFromStorage();
+            } finally {
+                clearStatus();
+                updateUI();
+            }
+        }
+        
+        // --- LÓGICA DE ARMAZENAMENTO LOCAL ---
+
+        function saveBaseToStorage(jsonData, fileName) {
+            try {
+                localStorage.setItem('cnae_base_dados', JSON.stringify(jsonData));
+                localStorage.setItem('cnae_base_filename', fileName);
+                baseDataFromStorage = jsonData;
+            } catch (e) {
+                console.error("Erro ao salvar no localStorage: ", e);
+                showToast("Não foi possível salvar a base. O armazenamento pode estar cheio.", "error");
+            }
+        }
+
+        function loadBaseFromStorage() {
+            const jsonDataString = localStorage.getItem('cnae_base_dados');
+            if (jsonDataString) {
+                baseDataFromStorage = JSON.parse(jsonDataString);
+            }
+            updateUI();
+        }
+
+        function removeBaseFromStorage() {
+            localStorage.removeItem('cnae_base_dados');
+            localStorage.removeItem('cnae_base_filename');
+            baseDataFromStorage = null;
+            excelFile = null;
+            showToast('Base de dados removida.', 'info');
+            updateUI();
+        }
+
+        function removePdfFile() {
+            pdfFile = null;
+            showToast('Arquivo PDF removido.', 'info');
+            updateUI();
+        }
+
+        // --- LÓGICA PRINCIPAL DE PROCESSAMENTO ---
+        
+        function cleanCnae(cnae) { return String(cnae).replace(/\D/g, ''); }
+
+        function readExcelFile(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, { type: 'array' });
+                        const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+                        resolve(json);
+                    } catch (err) { reject(err); }
+                };
+                reader.onerror = (err) => reject(err);
+                reader.readAsArrayBuffer(file);
+            });
+        }
+        
+        async function readPdfFile(file) {
+            const data = new Uint8Array(await file.arrayBuffer());
+            const pdf = await pdfjsLib.getDocument(data).promise;
+            const cnaesEncontrados = new Set();
+            for (let i = 1; i <= pdf.numPages; i++) {
+                const page = await pdf.getPage(i);
+                const textContent = await page.getTextContent();
+                const pageText = textContent.items.map(item => item.str).join(' ');
+                const matches = pageText.match(REGEX_CNAE_FORMATO) || [];
+                matches.forEach(cnae => cnaesEncontrados.add(cleanCnae(cnae)));
+            }
+            return cnaesEncontrados;
+        }
+        
+        async function handleProcessing() {
+            clearStatus();
+            dom.resultsArea.classList.add('hidden');
+            dom.processButton.disabled = true;
+            
+            try {
+                logStatus('Validando base de dados...', 'loading');
+                const requiredColumns = ['CNAE', 'descricao', 'classificacao'];
+                if (!baseDataFromStorage || baseDataFromStorage.length === 0 || !requiredColumns.every(col => col in baseDataFromStorage[0])) {
+                    removeBaseFromStorage();
+                    throw new Error(`Base de dados inválida. Carregue um novo arquivo.`);
+                }
+                logStatus('Base de dados validada.', 'success');
+                
+                logStatus('Extraindo CNAEs do PDF...', 'loading');
+                const pdfCnaes = await readPdfFile(pdfFile);
+                logStatus(`${pdfCnaes.size} CNAEs únicos encontrados no PDF.`, 'success');
+
+                logStatus('Comparando arquivos...', 'loading');
+                const baseDataWithCleanCnae = baseDataFromStorage.map(row => ({ ...row, NumerosBase: cleanCnae(row.CNAE) }));
+                const correspondencias = baseDataWithCleanCnae.filter(row => pdfCnaes.has(row.NumerosBase));
+                finalResults = correspondencias.map(({ NumerosBase, ...rest }) => rest);
+
+                clearStatus();
+                if (finalResults.length > 0) {
+                    showToast(`${finalResults.length} correspondências encontradas!`, 'success');
+                    renderResultsTable(finalResults);
+                } else {
+                    showToast('Nenhuma correspondência encontrada entre os arquivos.', 'info');
+                }
+
+            } catch (error) {
+                console.error('Erro no processamento:', error);
+                clearStatus();
+                showToast(`Ocorreu um erro: ${error.message}`, 'error');
+            } finally {
+                dom.processButton.disabled = false;
+                updateUI();
+            }
+        }
+        
+        async function downloadResults() {
+            if (finalResults.length === 0) return;
+            showToast('Gerando arquivo Excel...', 'info');
+            
+            const workbook = new ExcelJS.Workbook();
+            const worksheet = workbook.addWorksheet('Resultados');
+
+            const headers = Object.keys(finalResults[0]);
+            worksheet.columns = headers.map(header => ({ 
+                header: header.charAt(0).toUpperCase() + header.slice(1), 
+                key: header, 
+                width: COLUMN_WIDTHS[header] || 25 
+            }));
+
+            finalResults.forEach(row => {
+                const addedRow = worksheet.addRow(row);
+                const classification = row.classificacao?.toLowerCase() || '';
+                let color = null;
+                if (classification.includes("alto risco")) color = CLASSIFICATION_COLORS["ALTO risco"];
+                else if (classification.includes("médio risco")) color = CLASSIFICATION_COLORS["médio risco"];
+                else if (classification.includes("concomitante")) color = CLASSIFICATION_COLORS["concomitante"];
+                if (color) {
+                    addedRow.eachCell({ includeEmpty: true }, cell => { 
+                        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: color } }; 
+                    });
+                }
+            });
+
+            const buffer = await workbook.xlsx.writeBuffer();
+            saveAs(new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), 'resultado_validacao.xlsx');
+            
+            showToast('Download concluído!', 'success');
+        }
+        
+        /** Lógica para alternância de tema claro/escuro */
+        function initializeTheme() {
+            const applyTheme = (theme) => {
+                if (theme === 'dark') {
+                    document.documentElement.classList.add('dark');
+                    dom.themeToggleLightIcon.classList.remove('hidden');
+                    dom.themeToggleDarkIcon.classList.add('hidden');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                    dom.themeToggleLightIcon.classList.add('hidden');
+                    dom.themeToggleDarkIcon.classList.remove('hidden');
+                }
+            };
+
+            dom.themeToggleBtn.addEventListener('click', () => {
+                const isDark = document.documentElement.classList.toggle('dark');
+                localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                applyTheme(isDark ? 'dark' : 'light');
+            });
+
+            const savedTheme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+            if (savedTheme) {
+                applyTheme(savedTheme);
+            } else if (prefersDark) {
+                applyTheme('dark');
+            } else {
+                applyTheme('light');
+            }
+        }
+
+        // --- INICIALIZAÇÃO ---
+        document.addEventListener('DOMContentLoaded', () => {
+            setupDragAndDrop(dom.excelDropArea, dom.excelFileInput, handleExcelFile);
+            setupDragAndDrop(dom.pdfDropArea, dom.pdfFileInput, handlePdfFile);
+            dom.removeExcelButton.addEventListener('click', removeBaseFromStorage);
+            dom.removePdfButton.addEventListener('click', removePdfFile);
+            dom.processButton.addEventListener('click', handleProcessing);
+            dom.downloadButton.addEventListener('click', downloadResults);
+            
+            loadBaseFromStorage();
+            initializeTheme();
+        });
+    </script>
+</body>
+</html>
