@@ -16,7 +16,7 @@ const TABLE_COLUMN_WIDTH_CLASSES = {
 const COLUMN_DISPLAY_NAMES = {
     'CNAE': 'CNAE',
     'descricao': 'Descrição da Atividade', // <-- Nome alterado aqui
-    'classificacao': 'Classificação de Risco' // <-- Nome alterado aqui
+    'classificacao': 'Classificação' // <-- Nome alterado aqui
 };
 const REGEX_CNAE_FORMATO = /\b\d{2}\.\d{2}-\d-\d{2}\b/g;
 
@@ -257,7 +257,7 @@ function removePdfFile() {
 async function loadFixedExcelFile() {
     logStatus('Carregando base de dados...', 'loading');
     try {
-        const response = await fetch('base de dados.xlsx');
+        const response = await fetch('visa/base de dados.xlsx');
         if (!response.ok) throw new Error(`Não foi possível carregar o arquivo: ${response.statusText}`);
         const arrayBuffer = await response.arrayBuffer();
         const data = new Uint8Array(arrayBuffer);
@@ -456,6 +456,7 @@ function initializeTableInteractions() {
 
 // --- INICIALIZAÇÃO GERAL ---
 document.addEventListener('DOMContentLoaded', () => {
+    // Carrega a base de dados específica desta ferramenta
     loadFixedExcelFile();
     
     setupDragAndDrop(dom.pdfDropArea, dom.pdfFileInput, handlePdfFile);
