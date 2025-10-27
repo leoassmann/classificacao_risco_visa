@@ -1,0 +1,76 @@
+html {
+  font-size: 90%; 
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+}
+
+/* Animação para o spinner de carregamento */
+.loader {
+    border: 4px solid #9ca3af; /* cinza claro */
+    border-top: 4px solid #6366f1; /* indigo */
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+}
+.dark .loader {
+    border: 4px solid #4a5568; /* cinza escuro */
+    border-top: 4px solid #6366f1; /* indigo */
+}
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Estilo base da área de upload */
+.file-drop-area {
+    border: 2px dashed #d1d5db; /* cinza claro */
+    transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+}
+.dark .file-drop-area {
+    border-color: #4a5568; /* cinza escuro */
+}
+
+/* Estilo para quando um arquivo é arrastado sobre a área */
+.file-drop-area.dragover {
+    background-color: #eef2ff; /* indigo claro */
+    border-color: #6366f1; /* indigo */
+}
+.dark .file-drop-area.dragover {
+    background-color: #2d3748; /* cinza mais escuro */
+}
+
+/* Animações para as notificações (toast) */
+.toast {
+    animation: slide-in 0.5s forwards, fade-out 0.5s 4.5s forwards;
+}
+@keyframes slide-in {
+    from {
+        transform: translateY(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+@keyframes fade-out {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+/* --- ESTILOS ADICIONAIS PARA O MENU LATERAL --- */
+/* Esconde o texto do menu quando recolhido */
+.sidebar-collapsed .menu-text {
+    display: none;
+}
+/* Esconde o indicador de submenu quando recolhido */
+.sidebar-collapsed .submenu-indicator {
+    display: none;
+}
