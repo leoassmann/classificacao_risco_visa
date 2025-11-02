@@ -64,72 +64,82 @@
         <!-- Conteúdo Principal -->
         <main id="main-content" class="flex-1 transition-all duration-300 ease-in-out ml-64">
             <div class="h-screen p-4 sm:p-6 lg:p-8">
+                <!-- Botão de Tema movido para cá -->
+                <button id="theme-toggle" type="button" class="fixed top-5 right-5 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 rounded-lg text-sm p-2.5 z-50">
+                    <svg id="theme-toggle-dark-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
+                    <svg id="theme-toggle-light-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm-.707 10.607a1 1 0 011.414 0l.707-.707a1 1 0 111.414 1.414l-.707-.707a1 1 0 01-1.414 0zM17 13a1 1 0 100 2h-1a1 1 0 100-2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707z"></path></svg>
+                </button>
                 <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg dark:shadow-2xl p-6 sm:p-8 w-full h-full flex flex-col space-y-6 transition-all duration-300">
-                    
-                    <button id="theme-toggle" type="button" class="absolute top-5 right-5 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 rounded-lg text-sm p-2.5">
-                        <svg id="theme-toggle-dark-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
-                        <svg id="theme-toggle-light-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm-.707 10.607a1 1 0 011.414 0l.707-.707a1 1 0 111.414 1.414l-.707-.707a1 1 0 01-1.414 0zM17 13a1 1 0 100 2h-1a1 1 0 100-2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707z"></path></svg>
-                    </button>
 
-                    <div class="text-center">
-                        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Classificador de Risco - PMF</h1>
-                        <p class="text-gray-500 dark:text-gray-400 mt-2 text-xs">DECRETO nº 22.143, de 15 de outubro de 2020</p>
-                    </div>
-
-                    <div class="w-full max-w-xl mx-auto">
-                        <!-- Abas de seleção de método de entrada -->
-                        <div class="mb-4 border-b border-gray-200 dark:border-gray-700">
-                            <ul class="flex flex-wrap -mb-px text-sm font-medium text-center" id="input-method-tabs" role="tablist">
-                                <li class="mr-2" role="presentation">
-                                    <button class="inline-block p-4 border-b-2 rounded-t-lg" id="pdf-tab" data-tabs-target="#pdf-panel" type="button" role="tab" aria-controls="pdf-panel" aria-selected="true">Arquivo PDF</button>
-                                </li>
-                                <li class="mr-2" role="presentation">
-                                    <button class="inline-block p-4 border-b-2 rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300" id="text-tab" data-tabs-target="#text-panel" type="button" role="tab" aria-controls="text-panel" aria-selected="false">Digitar CNAEs</button>
-                                </li>
-                            </ul>
+                    <div id="initial-view" class="space-y-6">
+                        <div class="text-center">
+                            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Classificador de Risco - PMF</h1>
+                            <p class="text-gray-500 dark:text-gray-400 mt-2 text-xs">DECRETO nº 22.143, de 15 de outubro de 2020</p>
                         </div>
-
-                        <!-- Conteúdo das Abas -->
-                        <div id="input-method-content">
-                            <!-- Painel de Upload de PDF -->
-                            <div class="p-4 rounded-lg bg-gray-50 dark:bg-gray-800" id="pdf-panel" role="tabpanel" aria-labelledby="pdf-tab">
-                                <div id="pdf-drop-area" class="file-drop-area flex flex-col justify-center items-center rounded-lg p-6 min-h-[150px]">
-                                    <div id="pdf-initial-state" class="text-center">
-                                        <svg class="w-10 h-10 mx-auto text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
-                                        <p class="mt-2 text-gray-500 dark:text-gray-400 text-sm">Arraste o <strong class="text-red-500 dark:text-red-400">documento.pdf</strong></p>
-                                        <p class="text-xs text-gray-400 dark:text-gray-500 my-2">ou</p>
-                                        <label for="pdf-file-input" class="cursor-pointer bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition duration-300">Selecione o arquivo</label>
+    
+                        <div class="w-full max-w-xl mx-auto">
+                            <!-- Abas de seleção de método de entrada -->
+                            <div class="mb-4 border-b border-gray-200 dark:border-gray-700">
+                                <ul class="flex flex-wrap -mb-px text-sm font-medium text-center" id="input-method-tabs" role="tablist">
+                                    <li class="mr-2" role="presentation">
+                                        <button class="inline-block p-4 border-b-2 rounded-t-lg" id="pdf-tab" data-tabs-target="#pdf-panel" type="button" role="tab" aria-controls="pdf-panel" aria-selected="true">Arquivo PDF</button>
+                                    </li>
+                                    <li class="mr-2" role="presentation">
+                                        <button class="inline-block p-4 border-b-2 rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300" id="text-tab" data-tabs-target="#text-panel" type="button" role="tab" aria-controls="text-panel" aria-selected="false">Digitar CNAEs</button>
+                                    </li>
+                                </ul>
+                            </div>
+    
+                            <!-- Conteúdo das Abas -->
+                            <div id="input-method-content">
+                                <!-- Painel de Upload de PDF -->
+                                <div class="p-4 rounded-lg bg-gray-50 dark:bg-gray-800" id="pdf-panel" role="tabpanel" aria-labelledby="pdf-tab">
+                                    <div id="pdf-drop-area" class="file-drop-area flex flex-col justify-center items-center rounded-lg p-6 min-h-[150px]">
+                                        <div id="pdf-initial-state" class="text-center">
+                                            <svg class="w-10 h-10 mx-auto text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                                            <p class="mt-2 text-gray-500 dark:text-gray-400 text-sm">Arraste o <strong class="text-red-500 dark:text-red-400">documento.pdf</strong></p>
+                                            <p class="text-xs text-gray-400 dark:text-gray-500 my-2">ou</p>
+                                            <label for="pdf-file-input" class="cursor-pointer bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition duration-300">Selecione o arquivo</label>
+                                        </div>
+                                        <div id="pdf-loaded-state" class="hidden text-center">
+                                            <svg class="w-10 h-10 mx-auto text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                            <p class="mt-2 text-gray-700 dark:text-gray-300 font-semibold">PDF Carregado</p>
+                                            <p id="pdf-file-name" class="text-sm mt-1 text-red-600 dark:text-red-300 truncate font-mono" title=""></p>
+                                            <button id="remove-pdf-button" class="mt-4 bg-red-600 text-white px-3 py-1 text-xs rounded-lg hover:bg-red-700 transition duration-300">Remover</button>
+                                        </div>
+                                        <input type="file" id="pdf-file-input" class="hidden" accept=".pdf">
                                     </div>
-                                    <div id="pdf-loaded-state" class="hidden text-center">
-                                        <svg class="w-10 h-10 mx-auto text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                        <p class="mt-2 text-gray-700 dark:text-gray-300 font-semibold">PDF Carregado</p>
-                                        <p id="pdf-file-name" class="text-sm mt-1 text-red-600 dark:text-red-300 truncate font-mono" title=""></p>
-                                        <button id="remove-pdf-button" class="mt-4 bg-red-600 text-white px-3 py-1 text-xs rounded-lg hover:bg-red-700 transition duration-300">Remover</button>
-                                    </div>
-                                    <input type="file" id="pdf-file-input" class="hidden" accept=".pdf">
+                                </div>
+                                <!-- Painel de Entrada de Texto -->
+                                <div class="hidden p-4 rounded-lg bg-gray-50 dark:bg-gray-800" id="text-panel" role="tabpanel" aria-labelledby="text-tab">
+                                    <textarea id="cnae-text-input" rows="6" class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded bg-gray-50 dark:bg-gray-700 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 font-mono text-sm" placeholder="Digite ou cole os CNAEs aqui. Ex: 47.71-7-01, 8630-5/03..."></textarea>
                                 </div>
                             </div>
-                            <!-- Painel de Entrada de Texto -->
-                            <div class="hidden p-4 rounded-lg bg-gray-50 dark:bg-gray-800" id="text-panel" role="tabpanel" aria-labelledby="text-tab">
-                                <textarea id="cnae-text-input" rows="6" class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded bg-gray-50 dark:bg-gray-700 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 font-mono text-sm" placeholder="Digite ou cole os CNAEs aqui. Ex: 47.71-7-01, 8630-5/03..."></textarea>
-                            </div>
                         </div>
-                    </div>
-
-                    <div class="text-center pt-4">
-                        <button id="process-button" class="bg-indigo-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-indigo-700 disabled:bg-gray-400 dark:disabled:bg-gray-600 disabled:cursor-not-allowed transition-all duration-300 w-full md:w-auto" disabled>
-                            Processar Arquivo
-                        </button>
-                        <div id="status-container" class="mt-4 text-center space-y-2 text-xs"></div>
+    
+                        <div class="text-center pt-4">
+                            <button id="process-button" class="bg-indigo-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-indigo-700 disabled:bg-gray-400 dark:disabled:bg-gray-600 disabled:cursor-not-allowed transition-all duration-300 w-full md:w-auto" disabled>
+                                Processar Arquivo
+                            </button>
+                            <div id="status-container" class="mt-4 text-center space-y-2 text-xs"></div>
+                        </div>
                     </div>
                     
                     <div id="results-area" class="hidden flex flex-col flex-grow min-h-0">
-                        <div class="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4">
-                            <h2 class="text-xl font-bold text-gray-900 dark:text-white">Resultados Encontrados</h2>
-                            <button id="download-button" class="bg-teal-500 text-white px-5 py-2 rounded-lg hover:bg-teal-600 transition duration-300 flex items-center gap-2 w-full sm:w-auto justify-center">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                                Baixar Resultado
-                            </button>
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
+                            <div class="flex items-center gap-4">
+                                <button id="back-button" class="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-4 py-2 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition duration-300 flex items-center gap-2">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                                    Voltar
+                                </button-
+                                <h2 class="text-xl font-bold text-gray-900 dark:text-white">Resultados</h2>
+                            </div>
+                            <div class="w-full sm:w-auto">
+                                <button id="download-button" class="bg-teal-500 text-white px-5 py-2 rounded-lg hover:bg-teal-600 transition duration-300 flex items-center gap-2 w-full sm:w-auto justify-center">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                                    Baixar Resultado
+                                </button>
+                            </div>
                         </div>
                         <div class="bg-gray-50 dark:bg-gray-900 rounded-lg overflow-auto flex-grow min-h-0">
                             <table class="w-full text-left min-w-[600px] table-fixed">

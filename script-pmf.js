@@ -34,6 +34,8 @@ let filterDebounceTimer = null;
 
 // --- SELETORES DE ELEMENTOS DO DOM ---
 const dom = {
+    initialView: document.getElementById('initial-view'),
+    backButton: document.getElementById('back-button'),
     pdfDropArea: document.getElementById('pdf-drop-area'),
     pdfInitialState: document.getElementById('pdf-initial-state'),
     pdfLoadedState: document.getElementById('pdf-loaded-state'),
@@ -197,6 +199,14 @@ function renderResultsBody(data) {
     updateUI(); // Garante que a UI reflita o estado atual
 }
 
+/** Alterna entre a visão inicial (inputs) e a visão de resultados. */
+function toggleView(showResults) {
+    dom.initialView.classList.toggle('hidden', showResults);
+    dom.resultsArea.classList.toggle('hidden', !showResults);
+    // Limpa os resultados e o cabeçalho ao voltar para a visão inicial
+    if (!showResults) dom.resultsHeader.innerHTML = '';
+}
+
 /** Aplica os filtros e a ordenação atuais e renderiza apenas o corpo da tabela. */
 function applyFiltersAndSort() {
     let processedData = [...finalResults];
@@ -336,7 +346,7 @@ function readTextCnaes(text) {
 
 async function handleProcessing() {
     clearStatus();
-    dom.resultsArea.classList.add('hidden');
+    toggleView(false); // Garante que a view de resultados está escondida
     dom.processButton.disabled = true;
     
     try {
@@ -389,6 +399,7 @@ async function handleProcessing() {
             currentSort = { column: null, direction: 'none' };
             createResultsHeader(); // Cria o cabeçalho interativo uma única vez
             applyFiltersAndSort();
+            toggleView(true); // Mostra a view de resultados
         } else {
             showToast('Nenhuma correspondência encontrada entre os arquivos.', 'info');
         }
@@ -550,6 +561,7 @@ document.addEventListener('DOMContentLoaded', () => {
     dom.removePdfButton.addEventListener('click', removePdfFile);
     dom.processButton.addEventListener('click', handleProcessing);
     dom.downloadButton.addEventListener('click', downloadResults);
+    dom.backButton.addEventListener('click', () => toggleView(false));
     
     initializeTheme();
     initializeSidebar();
