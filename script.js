@@ -366,9 +366,9 @@ async function handleProcessing() {
         clearStatus();
         if (finalResults.length > 0) {
             showToast(`${finalResults.length} correspondências encontradas!`, 'success');
-            // Reseta filtros e ordenação, cria o cabeçalho e renderiza o corpo da tabela
+            // Reseta filtros e define ordenação padrão por classificacao (Z-A)
             currentFilters = {};
-            currentSort = { column: null, direction: 'none' };
+            currentSort = { column: 'classificacao', direction: 'desc' };
             createResultsHeader(); // Cria o cabeçalho interativo uma única vez
             applyFiltersAndSort();
             toggleView(true); // Mostra a view de resultados
@@ -389,33 +389,40 @@ async function handleProcessing() {
 async function downloadResults() {
     if (finalResults.length === 0) return;
     showToast('Gerando arquivo Excel...', 'info');
-    
+
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Resultados');
 
     const headers = Object.keys(finalResults[0]);
-    worksheet.columns = headers.map(header => ({ 
-        header: COLUMN_DISPLAY_NAMES[header] || (header.charAt(0).toUpperCase() + header.slice(1)), 
-        key: header, 
-        width: COLUMN_WIDTHS[header] || 25 
+    worksheet.columns = headers.map(header => ({
+        header: COLUMN_DISPLAY_NAMES[header] || (header.charAt(0).toUpperCase() + header.slice(1)),
+        key: header,
+        width: COLUMN_WIDTHS[header] || 25
     }));
 
-    finalResults.forEach(row => {
+    // Ordena os resultados por classificacao (Z-A) antes de exportar
+    const sortedResults = [...finalResults].sort((a, b) => {
+        const valA = a.classificacao || '';
+        const valB = b.classificacao || '';
+        return String(valB).localeCompare(String(valA), undefined, { numeric: true });
+    });
+
+    sortedResults.forEach(row => {
         const addedRow = worksheet.addRow(row);
         const classification = row.classificacao?.toLowerCase() || '';
         let color = null;
         if (classification.includes("iii - alto")) color = CLASSIFICATION_COLORS["ALTO risco"];
         else if (classification.includes("ii - médio")) color = CLASSIFICATION_COLORS["médio risco"];
         if (color) {
-            addedRow.eachCell({ includeEmpty: true }, cell => { 
-                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: color } }; 
+            addedRow.eachCell({ includeEmpty: true }, cell => {
+                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: color } };
             });
         }
     });
 
     const buffer = await workbook.xlsx.writeBuffer();
     saveAs(new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), 'resultado_validacao.xlsx');
-    
+
     showToast('Download concluído!', 'success');
 }
 
